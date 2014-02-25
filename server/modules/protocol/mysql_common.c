@@ -984,16 +984,17 @@ int gw_send_change_user_to_backend(char *dbname, char *user, uint8_t *passwd, My
  * Check authentication token received against stage1_hash and scramble
  *
  * @param dcb The current dcb
- * @param token The token sent by the client in the authentication request
- * @param token_len The token size in bytes
- * @param scramble The scramble data sent by the server during handshake
- * @param scramble_len The scrable size in bytes
- * @param username The current username in the authentication request
- * @param stage1_hash The SHA1(candidate_password) decoded by this routine
+ * @param token 	The token sent by the client in the authentication request
+ * @param token_len 	The token size in bytes
+ * @param scramble 	The scramble data sent by the server during handshake
+ * @param scramble_len 	The scrable size in bytes
+ * @param username	The current username in the authentication request
+ * @param stage1_hash	The SHA1(candidate_password) decoded by this routine
+ * @param repository	Optional pointer to a different users table
  * @return 0 on succesful check or != 0 on failure
  *
  */
-int gw_check_mysql_scramble_data(DCB *dcb, uint8_t *token, unsigned int token_len, uint8_t *scramble, unsigned int scramble_len, char *username, uint8_t *stage1_hash) {
+int gw_check_mysql_scramble_data(DCB *dcb, uint8_t *token, unsigned int token_len, uint8_t *scramble, unsigned int scramble_len, char *username, uint8_t *stage1_hash, void *repository) {
 	uint8_t step1[GW_MYSQL_SCRAMBLE_SIZE]="";
 	uint8_t step2[GW_MYSQL_SCRAMBLE_SIZE +1]="";
 	uint8_t check_hash[GW_MYSQL_SCRAMBLE_SIZE]="";
@@ -1010,7 +1011,7 @@ int gw_check_mysql_scramble_data(DCB *dcb, uint8_t *token, unsigned int token_le
 	 * please note 'real_password' is unknown!
 	 */
 
-	ret_val = gw_find_mysql_user_password_sha1(username, password, (DCB *) dcb);
+	ret_val = gw_find_mysql_user_password_sha1(username, password, dcb, repository);
 
 	if (ret_val) {
 		return 1;
@@ -1090,24 +1091,32 @@ int gw_check_mysql_scramble_data(DCB *dcb, uint8_t *token, unsigned int token_le
 /**
  * gw_find_mysql_user_password_sha1
  *
- * The routine fetches look for an user int he Gateway users' tableg
- * If found the HEX passwotd, representing sha1(sha1(password)), is converted in binary data and
+ * The routine fetches look for an user int he Gateway users' table
+ * The users' table is dcb->service->users or a different one specified with void *repository
+ *
+ * If found the HEX password, representing sha1(sha1(password)), is converted in binary data and
  * copied into gateway_password 
  *
- * @param username The user to look for
- * @param gateway_password The related SHA1(SHA1(password)), the pointer must be preallocated
- * @param repository The pointer to users' table data, passed as void *
+ * @param username 		The user to look for
+ * @param gateway_password	The related SHA1(SHA1(password)), the pointer must be preallocated
+ * @param dcb			Current DCB
+ * @param repository The pointer to a specific users' table data, passed as void *
  * @return 1 if user is not found or 0 if the user exists
  *
  */
 
-int gw_find_mysql_user_password_sha1(char *username, uint8_t *gateway_password, void *repository) {
+int gw_find_mysql_user_password_sha1(char *username, uint8_t *gateway_password, DCB *dcb, void *repository) {
         SERVICE *service = NULL;
         char *user_password = NULL;
 
-        service = (SERVICE *) ((DCB *)repository)->service;
+	service = (SERVICE *) dcb->service;
 
-        user_password = (char *)users_fetch(service->users, username);
+	if (repository != NULL) {
+		/* use a different repository than default service->users */
+		user_password = (char *)users_fetch((USERS *)repository, username);
+	} else {
+		user_password = (char *)users_fetch(service->users, username);
+	}
 
         if (!user_password) {
                 return 1;

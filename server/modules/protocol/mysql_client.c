@@ -29,6 +29,9 @@
  * 24/06/2013	Massimiliano Pinto	Added: fetch passwords from service users' hashtable
  * 02/09/2013	Massimiliano Pinto	Added: session refcount
  * 16/12/2013	Massimiliano Pinto	Added: client closed socket detection with recv(..., MSG_PEEK)
+ * 24/02/2014	Massimiliano Pinto	Added: on failed authentication a new users' table is loaded with time and frequency limitations
+ * 					If current user is authenticated the new users' table will replace the old one
+ *
  */
 
 #include <skygw_utils.h>
@@ -442,7 +445,88 @@ static int gw_mysql_do_authentication(DCB *dcb, GWBUF *queue) {
                                                 auth_token_len,
                                                 protocol->scramble, sizeof(protocol->scramble),
                                                 username,
-                                                stage1_hash);
+                                                stage1_hash, NULL);
+
+	/* On failed auth try to load users' table from backend database */
+	if (auth_ret != 0) {
+		USERS *new_users;
+		USERS *old_users;
+
+		/* check for another running getUsers request */
+		if (! spinlock_acquire_nowait(&dcb->service->users_table_spin)) {
+			LOGIF(LD, (skygw_log_write_flush(
+				LOGFILE_DEBUG,
+					"%lu [gw_mysql_do_authentication] failed to get get lock for loading new users' table: another thread is loading users",
+					pthread_self())));
+
+			return 1;
+                }
+
+		/* check if refresh rate limit has exceeded */
+		if ( (time(NULL) < (dcb->service->rate_limit.last + USERS_REFRESH_TIME)) || (dcb->service->rate_limit.nloads > USERS_REFRESH_MAX_PER_TIME)) { 
+			LOGIF(LE, (skygw_log_write_flush(
+				LOGFILE_ERROR,
+					"%lu [gw_mysql_do_authentication] refresh rate limit exceeded loading new users' table",
+					pthread_self())));
+
+			spinlock_release(&dcb->service->users_table_spin);
+ 			return 1;
+		}
+
+		/* new users table */
+		if ((new_users = users_alloc()) == NULL) {
+			LOGIF(LE, (skygw_log_write_flush(
+				LOGFILE_ERROR,
+					"%lu [gw_mysql_do_authentication] failed allocating a new users' table",
+					pthread_self())));
+
+ 			spinlock_release(&dcb->service->users_table_spin);
+			return 1;
+		}
+
+		dcb->service->rate_limit.nloads++;
+
+		/* update time and counter */
+		if (dcb->service->rate_limit.nloads > USERS_REFRESH_MAX_PER_TIME) {
+			dcb->service->rate_limit.nloads = 1;
+			dcb->service->rate_limit.last = time(NULL);
+		}
+
+		/* get the new data */
+		if (getUsers(dcb->service, new_users) <= 0) {
+			LOGIF(LE, (skygw_log_write_flush(
+				LOGFILE_ERROR,
+					"%lu [gw_mysql_do_authentication] failed loading users from database",
+					pthread_self())));
+
+			spinlock_release(&dcb->service->users_table_spin);
+			return 1;
+		}
+
+		/* Try authentication again with new repository data */
+		/* Note: if no auth client authentication will fail */
+
+		auth_ret = gw_check_mysql_scramble_data(dcb, auth_token, auth_token_len, protocol->scramble, sizeof(protocol->scramble), username, stage1_hash, new_users);
+
+		/* if auth is ok, switch tables */
+		if (!auth_ret) {
+			spinlock_acquire(&dcb->service->spin);
+			old_users = dcb->service->users;
+			dcb->service->users = new_users;
+			spinlock_release(&dcb->service->spin);
+
+			LOGIF(LD, (skygw_log_write_flush(
+				LOGFILE_DEBUG,
+					"%lu [gw_mysql_do_authentication] switched users's table triggered by user %s. Old table was %p, new is %p",
+					pthread_self(), username, old_users, new_users)));
+
+			users_free(old_users);
+		 }
+
+		/* remove lock */
+		spinlock_release(&dcb->service->users_table_spin);
+
+	}
 
 	/* let's free the auth_token now */
 	if (auth_token)

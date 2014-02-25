@@ -26,6 +26,8 @@
  * 18/06/13	Mark Riddoch		Initial implementation
  * 24/06/13	Massimiliano Pinto	Added: Loading users from mysql backend in serviceStart
  * 06/02/14	Massimiliano Pinto	Added: serviceEnableRootUser routine
+ * 25/02/14	Massimiliano Pinto	Added: service refresh limit feature
+ *
  * @endverbatim
  */
 #include <stdio.h>
@@ -82,6 +84,8 @@ SERVICE 	*service;
 	service->enable_root = 0;
 	service->routerOptions = NULL;
 	service->databases = NULL;
+	memset(&service->rate_limit, 0, sizeof(SERVICE_REFRESH_RATE));
+	spinlock_init(&service->users_table_spin);
 	spinlock_init(&service->spin);
 
 	spinlock_acquire(&service_spin);

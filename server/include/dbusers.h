@@ -25,11 +25,16 @@
  * @verbatim
  * Revision History
  *
- * Date		Who		Description
- * 25/06/13	Mark Riddoch	Initial implementation
+ * Date		Who			Description
+ * 25/06/13	Mark Riddoch		Initial implementation
+ * 25/02/13	Massimiliano Pinto	Added users table refresh rate default values
  *
  * @endverbatim
  */
+
+/* Refresh rate limits for load users from database */
+#define USERS_REFRESH_TIME 30           /* Allowed time interval (in seconds) after last update*/
+#define USERS_REFRESH_MAX_PER_TIME 4    /* Max number of load calls within the time interval */
 
 extern int load_mysql_users(SERVICE *service);
 extern int reload_mysql_users(SERVICE *service);

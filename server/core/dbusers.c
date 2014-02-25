@@ -45,7 +45,7 @@
 
 extern int lm_enabled_logfiles_bitmask;
 
-static int getUsers(SERVICE *service, struct users *users);
+int getUsers(SERVICE *service, struct users *users);
 
 /**
  * Load the user/passwd form mysql.user table into the service users' hashtable
@@ -93,7 +93,7 @@ struct users	*newusers, *oldusers;
  * @param users		The users table into which to load the users
  * @return      -1 on any error or the number of users inserted (0 means no users at all)
  */
-static int
+int
 getUsers(SERVICE *service, struct users *users)
 {
 	MYSQL      *con = NULL;

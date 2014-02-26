@@ -142,6 +142,7 @@ extern	int	serviceSetUser(SERVICE *, char *, char *);
 extern	int	serviceGetUser(SERVICE *, char **, char **);
 extern	int	serviceEnableRootUser(SERVICE *, int );
 extern	void	service_update(SERVICE *, char *, char *, char *);
+extern	int	service_refresh_users(SERVICE *);
 extern	void	printService(SERVICE *);
 extern	void	printAllServices();
 extern	void	dprintAllServices(DCB *);

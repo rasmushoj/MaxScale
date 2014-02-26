@@ -19,6 +19,7 @@
  */
 #include <hashtable.h>
 #include <dcb.h>
+#include <stdint.h>
 
 /**
  * @file users.h The functions to manipulate the table of users maintained
@@ -50,6 +51,7 @@ typedef struct {
 typedef struct users {
 	HASHTABLE	*data;		/**< The hashtable containing the actual data */
 	USERS_STATS	stats;		/**< The statistics for the users table */
+	uint8_t		*chksum;	/**< The users' table ckecksum */
 } USERS;
 
 extern USERS	*users_alloc();				/**< Allocate a users table */

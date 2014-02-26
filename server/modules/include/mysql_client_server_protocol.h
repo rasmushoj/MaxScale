@@ -33,6 +33,8 @@
  * 					and repository to gw_check_mysql_scramble_data()
  * 					It's now possible to specify a different users' table than
  * 					dcb->service->users default
+ * 26-02-2014	Massimiliano Pinto	Removed previouvsly added parameters to gw_check_mysql_scramble_data() and
+ * 					gw_find_mysql_user_password_sha1()
  *
  */
 
@@ -269,8 +271,7 @@ int gw_send_change_user_to_backend(
 int gw_find_mysql_user_password_sha1(
         char *username,
         uint8_t *gateway_password,
-	DCB *dcb,
-        void *repository);
+	DCB *dcb);
 int gw_check_mysql_scramble_data(
         DCB *dcb,
         uint8_t *token,
@@ -278,8 +279,7 @@ int gw_check_mysql_scramble_data(
         uint8_t *scramble,
         unsigned int scramble_len,
         char *username,
-        uint8_t *stage1_hash,
-	void *repository);
+        uint8_t *stage1_hash);
 int mysql_send_auth_error (
         DCB *dcb,
         int packet_number,

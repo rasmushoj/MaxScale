@@ -880,7 +880,7 @@ static int gw_change_user(DCB *backend, SERVER *server, SESSION *in_session, GWB
         }
         // decode the token and check the password
         // Note: if auth_token_len == 0 && auth_token == NULL, user is without password
-        auth_ret = gw_check_mysql_scramble_data(backend->session->client, auth_token, auth_token_len, client_protocol->scramble, sizeof(client_protocol->scramble), username, client_sha1, NULL);
+        auth_ret = gw_check_mysql_scramble_data(backend->session->client, auth_token, auth_token_len, client_protocol->scramble, sizeof(client_protocol->scramble), username, client_sha1);
 
         // let's free the auth_token now
         if (auth_token)

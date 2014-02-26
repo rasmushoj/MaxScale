@@ -36,6 +36,12 @@
 #define USERS_REFRESH_TIME 30           /* Allowed time interval (in seconds) after last update*/
 #define USERS_REFRESH_MAX_PER_TIME 4    /* Max number of load calls within the time interval */
 
+/* Max length of fields in the mysql.user table */
+#define MYSQL_USER_MAXLEN	128
+#define MYSQL_PASSWORD_LEN	41
+#define MYSQL_HOST_MAXLEN	60
+
 extern int load_mysql_users(SERVICE *service);
 extern int reload_mysql_users(SERVICE *service);
+extern int replace_mysql_users(SERVICE *service);
 #endif

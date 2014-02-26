@@ -19,7 +19,7 @@
  */
 #include <hashtable.h>
 #include <dcb.h>
-#include <stdint.h>
+#include <openssl/sha.h>
 
 /**
  * @file users.h The functions to manipulate the table of users maintained
@@ -28,8 +28,9 @@
  * @verbatim
  * Revision History
  *
- * Date		Who		Description
- * 23/06/13	Mark Riddoch	Initial implementation
+ * Date		Who			Description
+ * 23/06/13	Mark Riddoch		Initial implementation
+ * 26/02/14	Massimiliano Pinto	Added checksum to users' table with SHA1
  *
  * @endverbatim
  */
@@ -49,9 +50,10 @@ typedef struct {
  * for the authentication implementation within the gateway.
  */
 typedef struct users {
-	HASHTABLE	*data;		/**< The hashtable containing the actual data */
-	USERS_STATS	stats;		/**< The statistics for the users table */
-	uint8_t		*chksum;	/**< The users' table ckecksum */
+	HASHTABLE	*data;			/**< The hashtable containing the actual data */
+	USERS_STATS	stats;			/**< The statistics for the users table */
+	unsigned char
+		cksum[SHA_DIGEST_LENGTH];	/**< The users' table ckecksum */
 } USERS;
 
 extern USERS	*users_alloc();				/**< Allocate a users table */

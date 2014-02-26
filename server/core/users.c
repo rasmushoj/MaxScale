@@ -81,7 +81,6 @@ void
 users_free(USERS *users)
 {
 	hashtable_free(users->data);
-	free(users->chksum);
 	free(users);
 }
 

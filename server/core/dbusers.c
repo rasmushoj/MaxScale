@@ -41,7 +41,6 @@
 #include <skygw_utils.h>
 #include <log_manager.h>
 #include <secrets.h>
-#include <openssl/sha.h>
 
 #define USERS_QUERY_NO_ROOT " WHERE user NOT IN ('root')"
 #define LOAD_MYSQL_USERS_QUERY "SELECT user, password, concat(user,host,password) AS userdata FROM mysql.user"
@@ -115,22 +114,12 @@ struct users	*newusers, *oldusers;
 	spinlock_acquire(&service->spin);
 	oldusers = service->users;
 
-	if (oldusers->chksum == NULL || newusers->chksum == NULL) {
-		users_free(newusers);
-		spinlock_release(&service->spin);
-		LOGIF(LE, (skygw_log_write_flush(
-			LOGFILE_ERROR,
-			"%lu [replace_mysql_users] users' tables checksum is NULL",
-			pthread_self())));
-		return 0;
-	}
-
-	if (memcmp(oldusers->chksum, newusers->chksum, SHA_DIGEST_LENGTH) == 0) {
+	if (memcmp(oldusers->cksum, newusers->cksum, SHA_DIGEST_LENGTH) == 0) {
 		/* same data, nothing to do */
 		LOGIF(LD, (skygw_log_write_flush(
 			LOGFILE_DEBUG,
-			"%lu [replace_mysql_users] users' tables not switched, checksum is the same",
-			pthread_self())));
+			"%lu [replace_mysql_users] users' tables not switched, checksum is the same: current %s, new %s",
+			pthread_self(), oldusers->cksum, newusers->cksum)));
 		users_free(newusers);
 		i = 0;
 	} else {
@@ -321,13 +310,7 @@ getUsers(SERVICE *service, struct users *users)
 
         SHA1((const unsigned char *) users_data, strlen(users_data), hash);
 
-	users->chksum = (unsigned char *) calloc(1, SHA_DIGEST_LENGTH);	
-        if(users->chksum == NULL) {
-		free(users_data);
-                return -1;
-	}
-	
-	memcpy(users->chksum, hash, 20);
+	memcpy(users->cksum, hash, SHA_DIGEST_LENGTH);
 
 	free(users_data);
 

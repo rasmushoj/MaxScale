@@ -449,7 +449,6 @@ static int gw_mysql_do_authentication(DCB *dcb, GWBUF *queue) {
 
 	/* On failed auth try to load users' table from backend database */
 	if (auth_ret != 0) {
-
 		if (!service_refresh_users(dcb->service)) {
 			/* Try authentication again with new repository data */
 			/* Note: if no auth client authentication will fail */

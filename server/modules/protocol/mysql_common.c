@@ -406,7 +406,7 @@ int gw_send_authentication_to_backend(
         uint8_t client_capabilities[4];
         uint32_t server_capabilities;
         uint32_t final_capabilities;
-        char dbpass[129]="";
+        char dbpass[MYSQL_USER_MAXLEN + 1]="";
 	GWBUF *buffer;
 	DCB *dcb;
 
@@ -817,7 +817,7 @@ int gw_send_change_user_to_backend(char *dbname, char *user, uint8_t *passwd, My
         uint8_t client_capabilities[4];
         uint32_t server_capabilities;
         uint32_t final_capabilities;
-        char dbpass[129]="";
+        char dbpass[MYSQL_USER_MAXLEN + 1]="";
 	GWBUF *buffer;
 	DCB *dcb;
 

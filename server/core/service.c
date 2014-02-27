@@ -703,7 +703,7 @@ int service_refresh_users(SERVICE *service) {
 	if (! spinlock_acquire_nowait(&service->users_table_spin)) {
 		LOGIF(LD, (skygw_log_write_flush(
 			LOGFILE_DEBUG,
-			"%lu [gw_mysql_do_authentication] failed to get get lock for loading new users' table: another thread is loading users",
+			"%lu [service_refresh_users] failed to get get lock for loading new users' table: another thread is loading users",
 			pthread_self())));
 
 		return 1;
@@ -714,7 +714,7 @@ int service_refresh_users(SERVICE *service) {
 	if ( (time(NULL) < (service->rate_limit.last + USERS_REFRESH_TIME)) || (service->rate_limit.nloads > USERS_REFRESH_MAX_PER_TIME)) { 
 		LOGIF(LE, (skygw_log_write_flush(
 			LOGFILE_ERROR,
-			"%lu [gw_mysql_do_authentication] refresh rate limit exceeded loading new users' table",
+			"%lu [service_refresh_users] refresh rate limit exceeded loading new users' table",
 			pthread_self())));
 
 		spinlock_release(&service->users_table_spin);

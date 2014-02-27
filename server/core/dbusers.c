@@ -118,8 +118,9 @@ struct users	*newusers, *oldusers;
 		/* same data, nothing to do */
 		LOGIF(LD, (skygw_log_write_flush(
 			LOGFILE_DEBUG,
-			"%lu [replace_mysql_users] users' tables not switched, checksum is the same: current %s, new %s",
-			pthread_self(), oldusers->cksum, newusers->cksum)));
+			"%lu [replace_mysql_users] users' tables not switched, checksum is the same",
+			pthread_self())));
+		/* free the new table */
 		users_free(newusers);
 		i = 0;
 	} else {

@@ -40,6 +40,7 @@
 #define MYSQL_USER_MAXLEN	128
 #define MYSQL_PASSWORD_LEN	41
 #define MYSQL_HOST_MAXLEN	60
+#define MYSQL_DATABASE_MAXLEN	128
 
 extern int load_mysql_users(SERVICE *service);
 extern int reload_mysql_users(SERVICE *service);

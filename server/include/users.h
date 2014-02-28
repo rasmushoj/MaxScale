@@ -31,9 +31,12 @@
  * Date		Who			Description
  * 23/06/13	Mark Riddoch		Initial implementation
  * 26/02/14	Massimiliano Pinto	Added checksum to users' table with SHA1
+ * 27/02/14	Massimiliano Pinto	Added USERS_HASHTABLE_DEFAULT_SIZE
  *
  * @endverbatim
  */
+
+#define USERS_HASHTABLE_DEFAULT_SIZE 52
 
 /**
  * The users table statistics structure

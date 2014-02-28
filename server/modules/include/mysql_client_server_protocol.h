@@ -78,9 +78,6 @@
 #define MYSQL_SCRAMBLE_LEN GW_MYSQL_SCRAMBLE_SIZE
 #endif
 
-#define MYSQL_USER_MAXLEN 128
-#define MYSQL_DATABASE_MAXLEN 128
-
 #define GW_NOINTR_CALL(A)       do { errno = 0; A; } while (errno == EINTR)
 // network buffer is 32K
 #define MAX_BUFFER_SIZE 32768

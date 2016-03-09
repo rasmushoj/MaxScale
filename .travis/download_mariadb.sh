@@ -10,3 +10,6 @@ wget --content-disposition ${MARIADB_URL}
 
 # unompress
 tar -axf ${MARIADB_TAR}
+
+# see what we have
+ls -la

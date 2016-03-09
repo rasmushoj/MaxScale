@@ -8,7 +8,7 @@ env:
   global:
     - MARIADB_URL=https://downloads.mariadb.org/interstitial/mariadb-10.1.12/bintar-linux-glibc_214-x86_64/mariadb-10.1.12-linux-glibc_214-x86_64.tar.gz/from/http%3A//mirror.netinch.com/pub/mariadb/
     - MARIADB_TAR=mariadb-10.1.12-linux-glibc_214-x86_64.tar.gz
-    - MARIADB_DIR=mariadb-10.1.12-linux-x86_64
+    - MARIADB_DIR=mariadb-10.1.12-linux-glibc_214-x86_64
 
 # prepare the environment
 before_script:
